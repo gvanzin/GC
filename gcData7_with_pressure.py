@@ -1,8 +1,9 @@
 '''this script extracts sample name, data result, date, time, and sample notes
 notes (in our case, sample pressure) from the Agilent GC6890 used by the GEM lab
 for permanent gas analysis.  Input is a directory containing *.D folders.  Each
-directory should have a report.txt file, and if necessary, a report00.csv containing 
-sample pressure in the sample info field.  This python file should be placed in the directory
+directory should have a report.txt file, and a report00.csv containing 
+sample pressure in the sample info field.  If sample pressure is not in the 
+sample info field this script won't run.  This python file should be placed in the directory
 containing the *.D folders. '''
 
 import pandas as pd
@@ -29,6 +30,8 @@ for i in pat:
 				result_line.append('999 999 999 999 999')
 			if 'No peaks found' in line:
 				result_line.append('999 999 999 999 999')
+			if 'Calibrated compound(s) not found' in line:
+				result_line.append('999 999 999 999 999')
 			if 'Data File' in line:
 				sample_line.append(line)
 			if 'GC6890' in line:
@@ -50,6 +53,8 @@ for i in pat:
 		for line in inF:
 			if 'Sample Info' in line:
 				pressure_line.append(line)
+			elif 'Calibration Table' in line:
+				pressure_line.append('999,999,999')
 	psl=[i.strip('\r\n') for i in pressure_line]
 	pressure_line_split=[i.split(',') for i in psl]
 	pressure=pressure_line_split[0][1][1:]
