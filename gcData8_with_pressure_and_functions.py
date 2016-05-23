@@ -12,35 +12,41 @@ sample_result_date_time_pressure=[]
 
 
 def dirs():
+	'''this function creates a list of *.D directories to pass to subsequent functions.
+	   must pop off first directory in the list, which is the '.' directory'''
 	pat=[]
 	for root, dir, files in os.walk('.'):
 		pat.append(root)
 	pat.pop(0)
 	return pat
 
-
-for i in pat:
-	os.chdir(i)
+def append():
 	date_line=[]
 	result_line=[]
 	sample_line=[]
-	pressure_line=[]
-	with open('Report.TXT','r') as inF:
-		for line in inF:
-			if 'BP' in line:
-				result_line.append(line)
-			if 'BB' in line:
-				result_line.append(line)
-			if 'PP' in line:
-				result_line.append('999 999 999 999 999')
-			if 'No peaks found' in line:
-				result_line.append('999 999 999 999 999')
-			if 'Calibrated compound(s) not found' in line:
-				result_line.append('999 999 999 999 999')
-			if 'Data File' in line:
-				sample_line.append(line)
-			if 'GC6890' in line:
-				date_line.append(line)
+	for i in pat:
+		a=os.getcwd()
+		os.chdir(a+"/"+i)
+
+		#
+		with open('Report.TXT','r') as inF:
+			for line in inF:
+				if 'BP' in line:
+					result_line.append(line)
+				if 'BB' in line:
+					result_line.append(line)
+				if 'PP' in line:
+					result_line.append('999 999 999 999 999')
+				if 'No peaks found' in line:
+					result_line.append('999 999 999 999 999')
+				if 'Calibrated compound(s) not found' in line:
+					result_line.append('999 999 999 999 999')
+				if 'Data File' in line:
+					sample_line.append(line)
+				if 'GC6890' in line:
+					date_line.append(line)
+		os.chdir("..")
+	return result_line, sample_line, date_line
 	
 	result_line_split=[i.split() for i in result_line]
 	if result_line_split[0][2]=='S':
@@ -53,6 +59,8 @@ for i in pat:
 
 	sample_line_split=[i.split() for i in sample_line]
 	sample=sample_line_split[0][5]
+
+	pressure_line=[]
 
 	with open('REPORT00.CSV','r') as inF:
 		for line in inF:
@@ -71,3 +79,7 @@ for i in pat:
 df=pd.DataFrame(sample_result_date_time_pressure)
 df.columns=['sample','% CH4','Date','Time','Pressure']
 df.to_csv('final_merged.csv',index=False)
+
+if __name__ == '__main__':
+	pat = dirs()
+	result_line, sample_line, date_line = append()
